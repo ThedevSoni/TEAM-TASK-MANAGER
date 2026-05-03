@@ -7,28 +7,38 @@ import dashboard from './routes/dashboardRoutes.js';
 import users from './routes/userRoutes.js';
 import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
-const app=express();
+const app = express();
 
-// Allow the React frontend to call this API from the configured client URL.
+//  Proper CORS fix
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://team-task-manager-efr82uxc0-dev-sonis-projects-4d08c819.vercel.app'
+];
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
   credentials: true
 }));
 
-// Parse incoming JSON request bodies so controllers can read req.body.
 app.use(express.json());
 
-// Simple health endpoint used to confirm the backend is running.
+// health check
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
-// Mount all feature route groups under /api.
-app.use('/api/auth',auth);
-app.use('/api/projects',project);
-app.use('/api/tasks',task);
+// routes
+app.use('/api/auth', auth);
+app.use('/api/projects', project);
+app.use('/api/tasks', task);
 app.use('/api/dashboard', dashboard);
 app.use('/api/users', users);
 
-// Handle unknown routes first, then convert thrown errors into JSON responses.
+// error handlers
 app.use(notFound);
 app.use(errorHandler);
 
