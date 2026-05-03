@@ -9,36 +9,28 @@ import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 const app = express();
 
-//  Proper CORS fix
-const allowedOrigins = [
-  'http://localhost:5173',
-  'https://team-task-manager-efr82uxc0-dev-sonis-projects-4d08c819.vercel.app'
-];
-
+// ✅ FINAL CORS FIX (dynamic - works for all Vercel domains)
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('CORS not allowed'));
-    }
-  },
+  origin: true,
   credentials: true
 }));
 
+// Parse JSON
 app.use(express.json());
 
-// health check
-app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+// Health check
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok' });
+});
 
-// routes
+// Routes
 app.use('/api/auth', auth);
 app.use('/api/projects', project);
 app.use('/api/tasks', task);
 app.use('/api/dashboard', dashboard);
 app.use('/api/users', users);
 
-// error handlers
+// Error handling
 app.use(notFound);
 app.use(errorHandler);
 
